@@ -1,5 +1,5 @@
-import { v1 as Neo } from 'neo4j-driver';
 import { MongoClient } from 'mongodb';
+import { v1 as Neo } from 'neo4j-driver';
 
 const main = async () => {
   const driver = Neo.driver('bolt://localhost', Neo.auth.basic('neo4j', 'admin'));
@@ -7,22 +7,54 @@ const main = async () => {
   const mongoClient = new MongoClient('mongodb://localhost:27017', { useNewUrlParser: true });
   await mongoClient.connect();
   const db = mongoClient.db('off');
-
-  await db.collection('products').find({}, {
-    batchSize: 100000,
-    limit: 1000,
-    projection: {
-      'product_name': 1,
-      'stores': 1,
-      'code': 1,
-      'ingredients_text': 1
+  const cursor = db.collection('products').find(
+    {
+      product_name: { $exists: true, $ne: '' },
+      stores: { $exists: true, $ne: '' },
+      code: { $exists: true, $ne: '' },
+      countries_tags: { $exists: true },
+    },
+    {
+      batchSize: 100000,
+      projection: {
+        product_name: 1,
+        stores: 1,
+        code: 1,
+        countries_tags: 1,
+      },
     }
-  }).forEach(obj => {
-    console.log(obj);
-  });
-
+  );
+  while (cursor.hasNext) {
+    const obj = await cursor.next();
+    const stores: string[] = obj.stores.replace(', ', ',').split(',');
+    const countries: string[] = obj.countries_tags.map(tag => tag.slice(3));
+    if (countries.length === 0) {
+      countries.push('');
+    }
+    const productRelations: string[] = [];
+    const storeCreation = stores.reduce((acc, storeName, sI) => {
+      const newStores = countries
+        .map((country, cI) => {
+          productRelations.push(`CREATE (s${sI + '_' + cI})-[:SELL]->(p)`);
+          return `MERGE (s${sI + '_' + cI}:Store { name: "${storeName}", country: "${country}"})
+        `;
+        })
+        .join('\n');
+      return `${acc}${newStores}`;
+    }, '');
+    const toRun = `
+        CREATE (p:Product { code: "${obj.code}", name: "${sanitizeProductName(obj.product_name)}"})
+        ${storeCreation}${productRelations.join('\n')}
+      `;
+    await session.run(toRun);
+  }
   mongoClient.close();
+  session.close();
   driver.close();
 };
+
+const sanitizeProductName = (name: string) => {
+  return name.replace(/['".*+?^${}()|[\]\\]/g, '\\$&')
+}
 
 main();
