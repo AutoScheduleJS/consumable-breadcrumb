@@ -24,6 +24,15 @@ main workflow: user has a list of starred local stores + list of products (famil
 With Neo4J, we retrieve real product (behind generic one - resulting in potentially a lot of products)
 We check store that have the products. If there is no information, we check the associated main store.
 
+How to handle generic name ? "strawberry jam" = generic ; "jam" = category -> no distinction necessary between both. Manual organisation
+packaging (freeze, can, fresh): product property -> from OFF DB: surgeles
+chocolate: product property: % of cacao
+alcool: product property: % of alcool
+bio: array of labels
+serving size
+nutriments: nutriment per serving size
+brand
+
 # Other project
 - basket: app that give you the market where you will pay the least, worldwide, community driven
 - http://www.mesprovisions.com

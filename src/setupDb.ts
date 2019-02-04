@@ -35,15 +35,15 @@ const main = async () => {
     const storeCreation = stores.reduce((acc, storeName, sI) => {
       const newStores = countries
         .map((country, cI) => {
-          productRelations.push(`CREATE (s${sI + '_' + cI})-[:SELL]->(p)`);
-          return `MERGE (s${sI + '_' + cI}:Store { name: "${storeName}", country: "${country}"})
+          productRelations.push(`MERGE (s${sI + '_' + cI})-[:SELL]->(p)`);
+          return `MERGE (s${sI + '_' + cI}:Store { name: "${storeName.toLowerCase()}", country: "${country}"})
         `;
         })
         .join('\n');
       return `${acc}${newStores}`;
     }, '');
     const toRun = `
-        CREATE (p:Product { code: "${obj.code}", name: "${sanitizeProductName(obj.product_name)}"})
+        MERGE (p:Product { code: "${obj.code}", name: "${sanitizeProductName(obj.product_name)}"})
         ${storeCreation}${productRelations.join('\n')}
       `;
     await session.run(toRun);
@@ -54,7 +54,7 @@ const main = async () => {
 };
 
 const sanitizeProductName = (name: string) => {
-  return name.replace(/['".*+?^${}()|[\]\\]/g, '\\$&')
+  return name.replace(/[".*+?^${}()|[\]\\]/g, ' ')
 }
 
 main();
