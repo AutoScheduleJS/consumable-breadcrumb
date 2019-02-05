@@ -31,7 +31,9 @@ alcool: product property: % of alcool
 bio: array of labels
 serving size
 nutriments: nutriment per serving size
-brand
+brand -> associate quality with brand. Brands are quite similar across country, no needs to differentiate them per country.
+  how to handle multiple brands ? link a product to all brands. How to filter ?
+  job to keep only relationship with most impact (discount/Premium Plus)
 
 # Other project
 - basket: app that give you the market where you will pay the least, worldwide, community driven
