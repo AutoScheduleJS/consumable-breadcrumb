@@ -1,7 +1,18 @@
 product {
   _id,
   name: product code that help identification,
-  code: to retrieve the product from scanning
+  code: to retrieve the product from scanning,
+  packaging?: [freeze, can, fresh],
+  cacaoPercent?,
+  alcoolPercent?,
+}
+category {
+  _id,
+  name
+}
+brand {
+  _id,
+  name: brand name,
   quality: discout, premimum...
 }
 store {

@@ -25,9 +25,11 @@ With Neo4J, we retrieve real product (behind generic one - resulting in potentia
 We check store that have the products. If there is no information, we check the associated main store.
 
 How to handle generic name ? "strawberry jam" = generic ; "jam" = category -> no distinction necessary between both. Manual organisation
-packaging (freeze, can, fresh): product property -> from OFF DB: surgeles
+Food -> Spreadable -> Sweet spreadable -> Jam -> Strawberry jam. These category have to be usefull for recipes. A recipe can target a category.
+preservation (freeze, can, fresh): product property (optional - only for fruts, veg, and some other) -> from OFF DB: surgeles
 chocolate: product property: % of cacao
 alcool: product property: % of alcool
+milk: powder, UHT, Pasterised
 bio: array of labels
 serving size
 nutriments: nutriment per serving size
