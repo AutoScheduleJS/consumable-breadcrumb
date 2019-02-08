@@ -7,6 +7,7 @@ interface OFFProduct {
   code: string;
   countries_tags: string[];
   packaging_tags: string[];
+  categories_tags: string[];
 }
 
 enum Preservation {
@@ -33,13 +34,14 @@ const handleProducts = async (cursor: Cursor<OFFProduct>) => {
     const obj: OFFProduct = (await cursor.next()) as OFFProduct;
     const stores: string[] = obj.stores.replace(', ', ',').split(',');
     const countries: string[] = obj.countries_tags.map(tag => tag.slice(3));
+    const categories: string[] = obj.categories_tags;
     if (countries.length === 0) {
       countries.push('');
     }
-    const storeAndRelations = buildStoresAndRelations(stores, countries);
     const toRun = `
-        ${buildProduct}
-        ${storeAndRelations}
+        ${buildProduct(obj)}
+        ${buildStoresAndRelations(stores, countries)}
+        ${buildCategoriesAndRelations(categories)}
       `;
     await session.run(toRun);
   }
@@ -55,13 +57,15 @@ const buildProduct = (obj: OFFProduct) => {
   })`;
 };
 
-const buildPreservation = (obj: OFFProduct) =>
-  obj.packaging_tags
+const buildPreservation = (obj: OFFProduct) => {
+  // TODO: use categories_tags: frozen-foods ; canned-foods
+  return obj.packaging_tags
     ? ', preservation: ' +
-      JSON.stringify(
-        obj.packaging_tags.map(packagingTagToPreservation).filter(p => p !== Preservation.none)
-      )
+        JSON.stringify(
+          obj.packaging_tags.map(packagingTagToPreservation).filter(p => p !== Preservation.none)
+        )
     : '';
+};
 
 const buildStoresAndRelations = (stores: string[], countries: string[]) => {
   const productRelations: string[] = [];
@@ -81,6 +85,66 @@ const buildStoresAndRelations = (stores: string[], countries: string[]) => {
   return storeCreation + productRelations.join('\n');
 };
 
+// const categoryBlackList = [
+//   'plant-based-foods-and-beverages',
+//   'plant-based-foods',
+//   'fruits-and-vegetables-based-foods',
+//   'cereals-and-potatoes',
+//   'fermented-foods',
+//   'fermented-milk-products',
+//   'spreads',
+//   'groceries',
+//   'cereals-and-their-products',
+//   'plant-based-beverages',
+//   'fruits-based-foods',
+//   'vegetables-based-foods',
+//   'plant-based-spreads',
+//   'fruit-based-beverages',
+//   'fats',
+//   'fresh-foods',
+//   'meat-based-products',
+//   'fruit-preserves',
+//   'legumes-and-their-products',
+//   'canned-plant-based-foods',
+//   'meals-with-meat',
+//   'hot-beverages',
+//   'nuts-and-their-products',
+//   'vegetable-fats',
+//   'legumes',
+//   'olive-tree-products',
+//   'microwave-meals',
+//   'meals-with-fish',
+//   'nuts',
+//   'cereal-grains',
+//   '',
+//   'dried-plant-based-foods',
+//   'artificially-sweetened-beverages',
+//   'fruits',
+//   'dried-products-to-be-rehydrated',
+//   'fresh-plant-based-foods',
+//   'fish-and-meat-and-eggs',
+//   'plant-based-pickles',
+//   'poultry-meals',
+//   'preparations-made-from-fish-meat',
+//   'fresh-vegetables',
+//   'milkfat',
+//   'soft-cheeses-with-bloomy-rind',
+//   'plant-based-pates',
+//   'breaded-products'
+// ]
+
+const buildCategoriesAndRelations = (categories: string[]) => {
+  categories
+    .filter(cat => cat.startsWith('en:') /*&& !categoryBlackList.includes(cat)*/)
+    .map((fullCat, i) => {
+      const cat = fullCat.slice(3);
+      return `MERGE (cat${i}):Category {
+      name: "${cat}"
+    }
+    MERGE (p)-[:BELONGS]->(cat${i})`})
+    .join('\n');
+};
+
 const retrieveProducts = (db: Db) =>
   db.collection('products').find(
     {
@@ -88,6 +152,7 @@ const retrieveProducts = (db: Db) =>
       stores: { $exists: true, $ne: '' },
       code: { $exists: true, $ne: '' },
       countries_tags: { $exists: true },
+      categories_tags: { $exists: true },
     },
     {
       batchSize: 100000,

@@ -8,7 +8,8 @@ product {
 }
 category {
   _id,
-  name
+  name,
+  count : number of products attached to it. Define hierarchy
 }
 brand {
   _id,

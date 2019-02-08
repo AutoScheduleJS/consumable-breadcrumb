@@ -25,7 +25,20 @@ With Neo4J, we retrieve real product (behind generic one - resulting in potentia
 We check store that have the products. If there is no information, we check the associated main store.
 
 How to handle generic name ? "strawberry jam" = generic ; "jam" = category -> no distinction necessary between both. Manual organisation
-Food -> Spreadable -> Sweet spreadable -> Jam -> Strawberry jam. These category have to be usefull for recipes. A recipe can target a category.
+Food -> Spreadable -> Sweet spreadable -> Jam -> Strawberry jam. These category have to be usefull for recipes. A recipe can target a category. too broad "Spreads" or "Food" nor "Jam" aren't usefull
+Broad categories could be usefull to group items when creating a shopping list, but not too broad, as in a shop, all "beverage" products aren't necessarly next together. But "alcool products" and "fruits juice" are good example of categories
+From OFF base, retrieve white listed categories and create relationship between product and category -> too much complexity:
+hierarchy isn't clearly established, it can vary between stores. When a product is in two categories (frozen-food + meet) where do you put it ? let user choose. If a product belongs to "breakfast" and "jam" and "fruit-jam", there is clear hierarcy between jam and fruit-jam but not jam and breakfast.
+let user combine categories so we can compute a score of relevance.
+```shell
+db.products.aggregate([
+  { $match: { categories_tags: { $exists: true, $ne: [] }}},
+  { $project: { categories_tags: 1 }},
+  { $unwind: "$categories_tags" },
+  { $group: {_id: "$categories_tags", total: { $sum: 1 }}},
+  { $sort: { total: -1 }}
+])
+```
 preservation (freeze, can, fresh): product property (optional - only for fruts, veg, and some other) -> from OFF DB: surgeles
 chocolate: product property: % of cacao
 alcool: product property: % of alcool
