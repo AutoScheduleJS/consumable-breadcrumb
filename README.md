@@ -38,7 +38,24 @@ db.products.aggregate([
   { $group: {_id: "$categories_tags", total: { $sum: 1 }}},
   { $sort: { total: -1 }}
 ])
+db.products.aggregate([
+  { $match: { brands: { $exists: true, $ne: "" }}},
+  { $project: { brands: 1 }},
+  { $group: { _id: "$brands", total: { $sum: 1 }}},
+  { $sort: { total: -1 }}
+])
 ```
+
+Greatest brands for chocolates:
+```cypher
+MATCH (p:Product)-[:BELONGS]->(:Category {name: "chocolates"})
+MATCH (s:Brand)<-[:MARKED_BY]-(p)
+WITH p, s, size((s)<-[:MARKED_BY]-(:Product)-[:BELONGS]->(:Category {name: "chocolates"})) as brandSize
+ORDER BY brandSize DESC
+RETURN p, s
+```
+
+
 preservation (freeze, can, fresh): product property (optional - only for fruts, veg, and some other) -> from OFF DB: surgeles
 chocolate: product property: % of cacao
 alcool: product property: % of alcool
