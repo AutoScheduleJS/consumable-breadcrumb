@@ -38,6 +38,7 @@ db.products.aggregate([
   { $group: {_id: "$categories_tags", total: { $sum: 1 }}},
   { $sort: { total: -1 }}
 ])
+db.products.aggregate([{ $match: { categories_tags: { $exists: true, $ne: [] }}}, { $project: { categories_tags: 1 }}, { $unwind: "$categories_tags" }, { $group: {_id: "$categories_tags", total: { $sum: 1 }}}, { $sort: { total: -1 }}])
 db.products.aggregate([
   { $match: { brands: { $exists: true, $ne: "" }}},
   { $project: { brands: 1 }},

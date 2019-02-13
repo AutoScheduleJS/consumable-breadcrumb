@@ -37,13 +37,15 @@ const handleProducts = async (cursor: Cursor<OFFProduct>) => {
     const countries: string[] = obj.countries_tags
       ? obj.countries_tags.map(tag => tag.slice(3))
       : [];
-    const categories: string[] = obj.categories_tags || [];
+    const categories: string[] = (obj.categories_tags || [])
+      .filter(cat => cat.startsWith('en:'))
+      .map(cat => cat.slice(3));
     const brands = obj.brands;
     if (countries.length === 0) {
       countries.push('');
     }
     const toRun = `
-        ${buildProduct(obj)}
+        ${buildProduct(obj, categories)}
         ${buildStoresAndRelations(stores, countries)}
         ${buildCategoriesAndRelations(categories)}
         ${buildBrandsAndRelations(brands)}
@@ -54,8 +56,8 @@ const handleProducts = async (cursor: Cursor<OFFProduct>) => {
   session.close();
   driver.close();
 };
-const buildProduct = (obj: OFFProduct) => {
-  const preservation = buildPreservation(obj);
+const buildProduct = (obj: OFFProduct, categories: string[]) => {
+  const preservation = buildPreservation(obj, categories);
   const productName = buildProductName(obj);
   return `MERGE (p:Product {
     code: "${obj.code}"
@@ -67,13 +69,14 @@ const buildProduct = (obj: OFFProduct) => {
 const buildProductName = (obj: OFFProduct) =>
   obj.product_name ? `, name: "${sanitizeProductName(obj.product_name)}"` : '';
 
-const buildPreservation = (obj: OFFProduct) => {
+const buildPreservation = (obj: OFFProduct, categories: string[]) => {
+  const preservations = [...(categories), ...(obj.packaging_tags || [])]
+    .map(packagingTagToPreservation)
+    .filter(p => p !== Preservation.none);
+  const uniquePreservations = new Set(preservations);
   // TODO: use categories_tags: frozen-foods ; canned-foods
-  return obj.packaging_tags && obj.packaging_tags.length > 0
-    ? ', preservation: ' +
-        JSON.stringify(
-          obj.packaging_tags.map(packagingTagToPreservation).filter(p => p !== Preservation.none)
-        )
+  return preservations.length > 0
+    ? ', preservation: ' + JSON.stringify(Array.from(uniquePreservations))
     : '';
 };
 
@@ -154,9 +157,7 @@ const buildBrandsAndRelations = (brand?: string) => {
 
 const buildCategoriesAndRelations = (categories: string[]) => {
   return categories
-    .filter(cat => cat.startsWith('en:') /*&& !categoryBlackList.includes(cat)*/)
-    .map((fullCat, i) => {
-      const cat = fullCat.slice(3);
+    .map((cat, i) => {
       return `MERGE (cat${i}:Category {
       name: "${cat}"
     })
@@ -171,7 +172,6 @@ const retrieveProducts = (db: Db) =>
       // product_name: { $exists: true, $ne: '' },
       // stores: { $exists: true, $ne: '' },
       code: { $exists: true },
-      categories_tags: { $in: ["en:chocolates"] },
       // countries_tags: { $exists: true },
       // categories_tags: { $exists: true, $ne: [] },
     },
@@ -193,13 +193,16 @@ const packagingTagToPreservation = (tag: string): Preservation => {
   switch (tag) {
     case 'frais':
     case 'fresh':
+    case 'fresh-foods':
     case 'fr-frais':
       return Preservation.fresh;
     case 'conserve':
     case 'canned':
+    case 'canned-foods':
     case 'konserve':
       return Preservation.canned;
     case 'surgele':
+    case 'frozen-foods':
     case 'frozen':
     case 'surgeles':
     case 'congelado':
