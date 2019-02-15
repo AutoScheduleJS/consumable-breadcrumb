@@ -1,3 +1,5 @@
+## Resources
+
 product {
   _id,
   name: product code that help identification,

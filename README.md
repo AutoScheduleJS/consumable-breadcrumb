@@ -4,6 +4,7 @@ Could use products info from OpenFoodFacts. We want it to be focused on local op
 
 # SaaS Application
 Game: race number of scanned missing articles in a store.
+-> associate product to localstore -> job to report this to globalstore
 Easily scan articles in a store -> app know in which store you are, you just have to scan and type the price.
 
 scan a receipt to enrich the DB.
@@ -13,6 +14,9 @@ Give a shopping list and a position, get a list of roadmap (like GMap results fo
 # Architecture
 DB with: stores with products availability, local store with products availability & prices, products.
 MongoDB: stores with mean of its local stores about products info.
+
+to model products availability/unavailability, maybe it should link categories to store.
+
 local store which overwrite its store info.
 Neo4J: Products with category as node.
 for discount code, maybe use a new field with { function: fnName, productId: }
