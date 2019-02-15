@@ -21,7 +21,7 @@ enum Preservation {
 const main = async () => {
   const mongoClient = new MongoClient('mongodb://localhost:27017', { useNewUrlParser: true });
   await mongoClient.connect();
-  const db = mongoClient.db('test');
+  const db = mongoClient.db('off');
   const cursor = retrieveProducts(db);
   await handleProducts(cursor);
   mongoClient.close();
@@ -98,54 +98,6 @@ const buildStoresAndRelations = (stores: string[], countries: string[]) => {
   return storeCreation + productRelations.join('\n');
 };
 
-// const categoryBlackList = [
-//   'plant-based-foods-and-beverages',
-//   'plant-based-foods',
-//   'fruits-and-vegetables-based-foods',
-//   'cereals-and-potatoes',
-//   'fermented-foods',
-//   'fermented-milk-products',
-//   'spreads',
-//   'groceries',
-//   'cereals-and-their-products',
-//   'plant-based-beverages',
-//   'fruits-based-foods',
-//   'vegetables-based-foods',
-//   'plant-based-spreads',
-//   'fruit-based-beverages',
-//   'fats',
-//   'fresh-foods',
-//   'meat-based-products',
-//   'fruit-preserves',
-//   'legumes-and-their-products',
-//   'canned-plant-based-foods',
-//   'meals-with-meat',
-//   'hot-beverages',
-//   'nuts-and-their-products',
-//   'vegetable-fats',
-//   'legumes',
-//   'olive-tree-products',
-//   'microwave-meals',
-//   'meals-with-fish',
-//   'nuts',
-//   'cereal-grains',
-//   '',
-//   'dried-plant-based-foods',
-//   'artificially-sweetened-beverages',
-//   'fruits',
-//   'dried-products-to-be-rehydrated',
-//   'fresh-plant-based-foods',
-//   'fish-and-meat-and-eggs',
-//   'plant-based-pickles',
-//   'poultry-meals',
-//   'preparations-made-from-fish-meat',
-//   'fresh-vegetables',
-//   'milkfat',
-//   'soft-cheeses-with-bloomy-rind',
-//   'plant-based-pates',
-//   'breaded-products'
-// ]
-
 const buildBrandsAndRelations = (brand?: string) => {
   return brand
     ? `MERGE(brand:Brand {
@@ -177,6 +129,7 @@ const retrieveProducts = (db: Db) =>
     },
     {
       batchSize: 100000,
+      limit: 1000,
       projection: {
         product_name: 1,
         stores: 1,
