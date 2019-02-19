@@ -1,6 +1,6 @@
-import { neo4jgraphql } from 'neo4j-graphql-js';
+import { neo4jgraphql, makeAugmentedSchema } from 'neo4j-graphql-js';
 
-export const typeDefs = `
+const typeDefs = `
 type Product {
   name: String
   code: String!
@@ -29,10 +29,15 @@ type Store {
 }
 `;
 
-export const resolvers = {
+const resolvers = {
   Query: {
     Product(parent, params, ctx, info) {
       return neo4jgraphql(parent, params, ctx, info);
     }
   }
 }
+
+export const schema = makeAugmentedSchema({
+  typeDefs,
+  resolvers
+})
