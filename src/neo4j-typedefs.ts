@@ -20,19 +20,19 @@ type Product {
 }
 
 type Category {
-  name: String
+  name: String!
   count: Int
   products: [Product] @relation(name: "BELONGS", direction: "IN")
 }
 
 type Brand {
-  name: String
+  name: String!
   quality: Int
   products: [Product] @relation(name: "BELONGS", direction: "IN")
 }
 
 type Store {
-  name: String
+  name: String!
   country: String
   products: [Product] @relation(name: "SELL", direction: "OUT")
 }
@@ -58,7 +58,7 @@ export const enumResolvers = {
 
 const resolvers = {};
 
-export const schema = makeAugmentedSchema({
+export const neo4jSchema = makeAugmentedSchema({
   typeDefs,
   resolvers,
 });
