@@ -38,8 +38,11 @@ type Store {
 }
 
 type Query {
-  searchStore(cat: String): [Store] @cypher(statement:
-    "MATCH (store:Store)-[:SELL]->(p:Product)-[:BELONGS]->(:Category {name: $cat}) RETURN store"
+  searchStores(cats: [String]): [Store] @cypher(statement:
+    "MATCH (store:Store)-[:SELL]->(p:Product)-[:BELONGS]->(c:Category) WHERE c.name IN $cats RETURN store"
+  )
+  searchProducts(cats: [String]): [Product] @cypher(statement:
+    "MATCH (product:Product)-[BELONGS]->(c:Category) WHERE c.name IN $cats RETURN product"
   )
 }
 `;
