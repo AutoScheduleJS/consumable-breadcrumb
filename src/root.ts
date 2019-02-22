@@ -1,9 +1,12 @@
 import * as bodyParser from 'body-parser';
 import * as express from 'express';
-import { ApolloServer } from 'apollo-server-express';
+import { ApolloServer, mergeSchemas } from 'apollo-server-express';
+import { MongoClient } from 'mongodb';
+import { v1 as Neo } from 'neo4j-driver';
+
 // import { router as apiRouter } from './api/router';
 import { neo4jSchema } from './neo4j-typedefs';
-import { v1 as Neo } from 'neo4j-driver';
+import { mongoSchema } from './mongodb-typedefs';
 
 const app = express();
 
@@ -13,10 +16,16 @@ export const appFactory = _ => {
 
   // app.use('/api', apiRouter({}));
 
+  const mergedSchema = mergeSchemas({
+    schemas: [neo4jSchema, mongoSchema],
+  });
   const apolloServer = new ApolloServer({
-    schema: neo4jSchema,
+    schema: mergedSchema,
     context: {
       driver: Neo.driver('bolt://localhost', Neo.auth.basic('neo4j', 'admin')),
+      col: new MongoClient('mongodb://localhost:27017', { useNewUrlParser: true })
+        .connect()
+        .then(client => client.db('cb-v2').collection('localStores')),
     },
   });
   apolloServer.applyMiddleware({ app });

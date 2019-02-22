@@ -1,6 +1,7 @@
-import { Collection } from 'mongodb';
+import { Collection, FindOneOptions } from 'mongodb';
+import { makeExecutableSchema } from 'graphql-tools';
 
-export const typeDefs = `
+const typeDefs = `
 type LocalStore {
   _id: ID!
   name: String!
@@ -21,21 +22,40 @@ type UnavailableProduct {
 type Query {
   localStore(_id: ID, name: String, storeRef: ID): [LocalStore]
 }
+
+type Mutation {
+  CreateLocalStore(name: String!, storeRef: ID!): LocalStore
+}
 `;
 
-export const resolver = {
+const resolvers = {
   Query: {
     localStore(_obj, args, context, _info) {
-      const col: Collection = context.col;
-      col.find(args);
+      const colPromise: Promise<Collection> = context.col;
+      return colPromise.then(col => col.find(args, findOptions).toArray());
+    },
+  },
+  Mutation: {
+    CreateLocalStore(_obj, args, context, _info) {
+      const colPromise: Promise<Collection> = context.col;
+      return colPromise.then(col => col.insertOne({ ...args })).then(result => result.ops[0]);
     },
   },
   LocalStore: {
     availableProducts(localStore) {
-      localStore.availableProducts;
+      return localStore.availableProducts;
     },
     unavailableProducts(localStore) {
-      localStore.unavailableProducts;
+      return localStore.unavailableProducts;
     },
   },
 };
+
+const findOptions: FindOneOptions = {
+  limit: 1000,
+};
+
+export const mongoSchema = makeExecutableSchema({
+  typeDefs,
+  resolvers,
+});
