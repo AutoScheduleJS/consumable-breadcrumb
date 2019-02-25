@@ -35,6 +35,7 @@ type Store {
   name: String!
   country: String
   products: [Product] @relation(name: "SELL", direction: "OUT")
+  _id: ID!
 }
 
 type Query {

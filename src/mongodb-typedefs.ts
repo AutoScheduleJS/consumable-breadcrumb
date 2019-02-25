@@ -20,7 +20,7 @@ type UnavailableProduct {
 }
 
 type Query {
-  localStore(_id: ID, name: String, storeRef: ID): [LocalStore]
+  LocalStore(_id: ID, name: String, storeRef: ID): [LocalStore]
 }
 
 type Mutation {
@@ -30,7 +30,7 @@ type Mutation {
 
 const resolvers = {
   Query: {
-    localStore(_obj, args, context, _info) {
+    LocalStore(_obj, args, context, _info) {
       const colPromise: Promise<Collection> = context.col;
       return colPromise.then(col => col.find(args, findOptions).toArray());
     },

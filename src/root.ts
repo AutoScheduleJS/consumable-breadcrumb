@@ -7,6 +7,7 @@ import { v1 as Neo } from 'neo4j-driver';
 // import { router as apiRouter } from './api/router';
 import { neo4jSchema } from './neo4j-typedefs';
 import { mongoSchema } from './mongodb-typedefs';
+import { linkResolvers, linkTypeDefs } from './link-typedefs';
 
 const app = express();
 
@@ -17,7 +18,9 @@ export const appFactory = _ => {
   // app.use('/api', apiRouter({}));
 
   const mergedSchema = mergeSchemas({
-    schemas: [neo4jSchema, mongoSchema],
+    schemas: [neo4jSchema, mongoSchema, linkTypeDefs],
+    resolvers: linkResolvers,
+    onTypeConflict: (_left, right) => { console.log("conflict!"); return right},
   });
   const apolloServer = new ApolloServer({
     schema: mergedSchema,
