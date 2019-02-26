@@ -16,7 +16,7 @@ type Product {
   preservation: [Int]
   categories: [Category] @relation(name: "BELONGS", direction: "OUT")
   brands: [Brand] @relation(name: "MARKED_BY", direction: "OUT")
-  stores: [Store] @relation(name: "SELL", direction: "IN")
+  stores: [Sell]
 }
 
 type Category {
@@ -31,10 +31,17 @@ type Brand {
   products: [Product] @relation(name: "BELONGS", direction: "IN")
 }
 
+type Sell @relation(name: "SELL") {
+  from: Store
+  to: Product
+  price: Int
+  count: Int
+}
+
 type Store {
   name: String!
   country: String
-  products: [Product] @relation(name: "SELL", direction: "OUT")
+  products: [Sell]
   _id: ID!
 }
 

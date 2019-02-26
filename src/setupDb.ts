@@ -85,7 +85,7 @@ const buildStoresAndRelations = (stores: string[], countries: string[]) => {
   const storeCreation = stores.reduce((acc, storeName, sI) => {
     const newStores = countries
       .map((country, cI) => {
-        productRelations.push(`MERGE (s${sI + '_' + cI})-[:SELL]->(p)`);
+        productRelations.push(`MERGE (s${sI + '_' + cI})-[:SELL { count: 0 }]->(p)`);
         return `MERGE (s${sI + '_' + cI}:Store {
             name: "${storeName.toLowerCase()}",
             country: "${country}"
