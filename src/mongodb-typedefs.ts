@@ -71,7 +71,9 @@ const resolvers = {
               `
             MATCH (store:Store)-[sell:SELL]->(product:Product)
             WHERE id(store) = toInteger($storeId) AND id(product) = toInteger($productId)
-            SET sell.price = (sell.price * sell.count) / (sell.count + 1) + $price / (sell.count + 1), sell.count = sell.count + 1
+            SET (CASE WHEN sell.price IS NULL THEN sell END).price = $price,
+            (CASE WHEN sell.price IS NOT NULL THEN sell END).price = (sell.price * sell.count) / (sell.count + 1) + $price / (sell.count + 1),
+            sell.count = sell.count + 1
             RETURN sell, store
             `,
               { storeId: localStore.storeRef, productId: args.productId, price: args.price }
