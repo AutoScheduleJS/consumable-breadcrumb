@@ -11,8 +11,8 @@ enum Preservation {
 
 const typeDefs = `
 type Product {
-  name: String
-  code: String!
+  name: String!
+  code: String
   preservation: [Int]
   categories: [Category] @relation(name: "BELONGS", direction: "OUT")
   brands: [Brand] @relation(name: "MARKED_BY", direction: "OUT")
@@ -36,6 +36,7 @@ type Sell @relation(name: "SELL") {
   to: Product
   price: Int
   count: Int
+  currentlyAvailable: Boolean
 }
 
 type Store {

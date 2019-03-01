@@ -8,12 +8,21 @@ How to handle unavailability? Currently, relationship between store & product ->
 - special event
 - season (for raw food)
 as property of available relationship - period/phase (array of interval ?) - is it possible to use it with cypher?
-  - IN ["NOV", "JAN"] -> not very accurate (month based availability), but could have multiple periods in the year
-  - day of year + inclusive/exclusive (november -> january : saved as january ; november ; exclusive) ; (april -> august : saved as same ; inclusive), but only one period in the year.
+  - x | IN ["NOV", "JAN"] -> not very accurate (month based availability), but could have multiple periods in the year
+  - v | day of year + inclusive/exclusive (november -> january : saved as january ; november ; exclusive) ; (april -> august : saved as same ; inclusive), but only one period in the year.
 Could be a daily job to update available property based on current date and period.
 For special case where products have multiple availability period, instead just switch a property from SELL "available": true/false
-link "DONT_SELL" to confirm unavailability
+link "DONT_SELL" to confirm unavailability.
 both SELL and DONT_SELL have a last_checked property to have a confidence index.
+
+How to handle global store update ?
+ - Global store have every products from local store
+ - Global store have products from at least 90% of local store
+ - job who aggregate values from local stores or at each local update ? Jobs need less wire and are easier to prepare.
+
+Local store are the source of thruth: information like availability go from them to global store.
+Global store information are usefull for newly created store, to have an idea of what it has
+
 How to handle raw product (code) ?
  - Product without code -> check OOF base what are products without code.
  - property like variety/type

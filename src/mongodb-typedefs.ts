@@ -22,6 +22,8 @@ type LocalStore {
 type AvailableProduct {
   id: ID!
   price: Int
+  lastChecked: Int
+  currentlyAvailable: Boolean
 }
 
 type UnavailableProduct {
