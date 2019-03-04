@@ -17,6 +17,7 @@ type Product {
   categories: [Category] @relation(name: "BELONGS", direction: "OUT")
   brands: [Brand] @relation(name: "MARKED_BY", direction: "OUT")
   stores: [Sell]
+  quantity: Int
 }
 
 type Category {

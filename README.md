@@ -49,6 +49,13 @@ db.products.aggregate([
   { $group: { _id: "$brands", total: { $sum: 1 }}},
   { $sort: { total: -1 }}
 ])
+
+db.products.aggregate([
+  { $match: { quantity: { $exists: true, $ne: "" }}},
+  { $project: { quantity: 1 }},
+  { $group: { _id: "$quantity", total: { $sum: 1 }}},
+  { $sort: { total: -1 }}
+])
 ```
 
 Greatest brands for chocolates:

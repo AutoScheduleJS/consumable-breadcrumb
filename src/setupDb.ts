@@ -4,6 +4,7 @@ import { v1 as Neo } from 'neo4j-driver';
 interface OFFProduct {
   stores?: string;
   product_name?: string;
+  quantity?: string;
   code: string;
   countries_tags?: string[];
   packaging_tags?: string[];
@@ -59,12 +60,47 @@ const handleProducts = async (cursor: Cursor<OFFProduct>) => {
 const buildProduct = (obj: OFFProduct, categories: string[]) => {
   const preservation = buildPreservation(obj, categories);
   const productName = buildProductName(obj);
+  const quantity = buildQuantity(obj);
   return `MERGE (p:Product {
     code: "${obj.code}"
     ${productName}
     ${preservation}
+    ${quantity}
   })`;
 };
+
+const buildQuantity = (obj: OFFProduct) => {
+  if (!obj.quantity) {
+    return "";
+  }
+  const quantity = extractQuantity(obj);
+  if (Number.isNaN(quantity)) {
+    return "";
+  }
+  return `, quantity: ${quantity}`
+}
+
+const extractQuantity = (obj: OFFProduct) => {
+  const normalizedQuantity = (obj.quantity as string).replace(',', '.').toLowerCase();
+  const quantity = Number.parseFloat(normalizedQuantity);
+  const unitI = normalizedQuantity.search(/[^\d\s\.]/gi);
+  if (unitI === -1) {
+    return quantity;
+  }
+  const unit = normalizedQuantity[unitI];
+  switch(unit) {
+    case 'g':
+    case 'm':
+    return quantity;
+    case 'k':
+    case 'l':
+    return quantity * 1000;
+    case 'cl':
+    return quantity * 10;
+    default:
+    return NaN;
+  }
+}
 
 const buildProductName = (obj: OFFProduct) =>
   obj.product_name ? `, name: "${sanitizeProductName(obj.product_name)}"` : '';
@@ -132,6 +168,7 @@ const retrieveProducts = (db: Db) =>
       limit: 1000,
       projection: {
         product_name: 1,
+        quantity: 1,
         stores: 1,
         code: 1,
         countries_tags: 1,

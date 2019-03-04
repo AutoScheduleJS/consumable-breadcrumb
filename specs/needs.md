@@ -18,6 +18,8 @@ both SELL and DONT_SELL have a last_checked property to have a confidence index.
 How to handle global store update ?
  - Global store have every products from local store
  - Global store have products from at least 90% of local store
+   To avoid filling the database with redundant information, between global & local: keep 90% of what is common for all local on global store : this avoid duplicate this information between all locals (available_products). But do not put all available products in global store: prevent an original local product to be duplicate in "unavailable_products" in all others stores.
+   Use a median price info in global store, so there is no need to duplicate data in local store. Fields available/unavailable are only used when local data are variant.
  - job who aggregate values from local stores or at each local update ? Jobs need less wire and are easier to prepare.
 
 Local store are the source of thruth: information like availability go from them to global store.
