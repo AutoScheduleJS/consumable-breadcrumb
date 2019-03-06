@@ -1,6 +1,10 @@
 # Plot
 DB of all grocery products associated with supermarket & price.
 Could use products info from OpenFoodFacts. We want it to be focused on local options, taking into account small market, itinerant market, etc...
+Usage:
+- find product price, compare price per store
+- search alternative product (different quality, filtering brands)
+- search available products in a store, from specific criteria
 
 # SaaS Application
 Game: race number of scanned missing articles in a store.
