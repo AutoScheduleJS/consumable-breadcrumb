@@ -90,3 +90,6 @@ brand -> associate quality with brand. Brands are quite similar across country, 
 - http://prixing.fr/
 
 - https://market.mashape.com/Datagram/products : API localisé avec prix
+
+# Running into production
+- https://neo4j.com/blog/kubernetes-deploy-neo4j-clusters/
